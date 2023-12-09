@@ -1,0 +1,13 @@
+# IDE specific
+.idea/
+.vscode/
+
+# Python specific
+__pycache__/
+.env
+.venv
+env/
+venv/
+
+# Other dirs
+Arch/
