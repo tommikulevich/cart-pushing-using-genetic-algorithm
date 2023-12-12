@@ -1,10 +1,21 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import random
 
-N = 15
+N = 45
 POPULATION_SIZE = 70
-GENERATIONS = 200
-MUTATION_RATE = 0.5
+NON_ELITE_SIZE = int(0.90*POPULATION_SIZE)
+GENERATIONS = 4000
+MUTATION_RATE = 0.25
+
+sum_of_squares = 0
+for i in range(N):
+    sum_of_squares += N**2
+
+#TODO change calculation of ideal J
+# J = 1/3 - (3 * N - 1) / (6*N**2) - 1 / (2*N**3) * sum_of_squares
+
+# print(J)
 
 
 class GeneticAlgorithm:
@@ -34,8 +45,19 @@ class GeneticAlgorithm:
             self.fitness[i] = self.evaluate(self.population[i])
 
     def select_parents(self):
-        return self.population[np.argmax(self.fitness)]
+        sorted_indices = np.argsort(self.fitness)
+        return self.population[sorted_indices[-1]], self.population[sorted_indices[-2]]
 
+    def wheel_selection(self):
+        normalized_fitness = np.maximum(self.fitness, 0)
+        total_fitness = np.sum(normalized_fitness)
+        selection_probabilities = normalized_fitness / total_fitness
+        selected_indices = np.random.choice(len(self.population), 2, p=selection_probabilities)
+        selected_individuals = [self.population[i] for i in selected_indices]
+
+        return selected_individuals
+
+# I do not see crossing, it is copy
     @staticmethod
     def cx_crossover(parent1, parent2):
         child = parent1.copy()
@@ -45,20 +67,32 @@ class GeneticAlgorithm:
         return child
 
     @staticmethod
+    def single_point_crossover(parent1, parent2):
+        random_number = random.randint(0, N)
+        child = parent1.copy()
+        child[random_number:] = parent2[random_number:]
+        return child
+
+    @staticmethod
     def mutate(individual):
-        mutation_idx = np.random.randint(low=0, high=N)
-        individual[mutation_idx] = np.random.uniform(low=0.0, high=1.0)
+        if np.random.rand() < MUTATION_RATE:
+            mutation_idx = np.random.randint(low=0, high=N)
+            individual[mutation_idx] = np.random.uniform(low=0.0, high=1.0)
         return individual
 
+    def elite(self):
+        sorted_indices = np.argsort(self.fitness)
+        return self.population[sorted_indices[NON_ELITE_SIZE:]]
+
     def evolve(self):
-        new_population = np.zeros((POPULATION_SIZE, N))
+        new_population = np.zeros((NON_ELITE_SIZE, N))
         self.evaluate_population()
-        for i in range(POPULATION_SIZE):
-            parent1 = self.select_parents()
-            parent2 = self.select_parents()
-            child = self.cx_crossover(parent1, parent2)
+        elite_population = self.elite()
+        for i in range(NON_ELITE_SIZE):
+            parent1, parent2 = self.wheel_selection()
+            child = self.single_point_crossover(parent1, parent2)
             new_population[i] = self.mutate(child)
-        self.population = new_population
+        self.population = np.concatenate((new_population, elite_population))
 
     def run(self):
         best_fitness = []
