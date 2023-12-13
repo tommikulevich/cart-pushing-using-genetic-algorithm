@@ -1,43 +1,37 @@
+import random
 import numpy as np
 import matplotlib.pyplot as plt
-import random
 
-N = 45
+
+N = 15
 POPULATION_SIZE = 70
-NON_ELITE_SIZE = int(0.90*POPULATION_SIZE)
+NON_ELITE_SIZE = int(0.90 * POPULATION_SIZE)
 GENERATIONS = 4000
 MUTATION_RATE = 0.25
-
-sum_of_squares = 0
-for i in range(N):
-    sum_of_squares += N**2
-
-J = 1/3 - (3 * N - 1) / (6*N**2) - 1 / (2*N**3) * sum(np.square(x) for x in range(N))
-
-print(J)
 
 
 class GeneticAlgorithm:
     def __init__(self):
         self.population = self.initialize_population()
         self.fitness = np.zeros(POPULATION_SIZE)
+        self.best_fitness = []
 
     @staticmethod
     def initialize_population():
         return np.random.uniform(low=0.0, high=1.0, size=(POPULATION_SIZE, N))
 
     @staticmethod
+    def calculate_ideal_fitness():
+        return 1 / 3 - (3 * N - 1) / (6 * N ** 2) - 1 / (2 * N ** 3) * np.sum(np.square(range(N)))
+
+    @staticmethod
     def evaluate(individual):
         x = np.zeros((N, 2))
-        u = individual[:-1]
-        u_last = individual[-1]
+        u = individual
         for k in range(N-1):
-            x[k+1, 0] = x[k, 1]
-            x[k+1, 1] = 2*x[k, 1] - x[k, 0] + (1/N**2) * u[k]
-        u_last_calculated = u_last - (x[N-1, 1] - x[N-1, 0])
-        if u_last_calculated < 0:
-            return -np.inf
-        return x[N-1, 1] - (1/(2*N)) * np.sum(u**2)
+            x[k + 1, 0] = x[k, 1]
+            x[k + 1, 1] = 2 * x[k, 1] - x[k, 0] + (1 / N ** 2) * u[k]
+        return x[N - 1, 1] - (1 / (2*N)) * np.sum(u ** 2)
 
     def evaluate_population(self):
         for i in range(POPULATION_SIZE):
@@ -53,23 +47,13 @@ class GeneticAlgorithm:
         selection_probabilities = normalized_fitness / total_fitness
         selected_indices = np.random.choice(len(self.population), 2, p=selection_probabilities)
         selected_individuals = [self.population[i] for i in selected_indices]
-
         return selected_individuals
-
-# I do not see crossing, it is copy
-    @staticmethod
-    def cx_crossover(parent1, parent2):
-        child = parent1.copy()
-        for i in range(N):
-            if np.random.rand() < MUTATION_RATE:
-                child[i] = parent2[i]
-        return child
 
     @staticmethod
     def single_point_crossover(parent1, parent2):
-        random_number = random.randint(0, N)
+        random_part = random.randint(0, N)
         child = parent1.copy()
-        child[random_number:] = parent2[random_number:]
+        child[random_part:] = parent2[random_part:]
         return child
 
     @staticmethod
@@ -94,18 +78,15 @@ class GeneticAlgorithm:
         self.population = np.concatenate((new_population, elite_population))
 
     def run(self):
-        best_fitness = []
         for _ in range(GENERATIONS):
             self.evolve()
             self.evaluate_population()
-            best_fitness.append(np.max(self.fitness))
-        self.plot_fitness_evolution(best_fitness)
+            self.best_fitness.append(np.max(self.fitness))
 
-    @staticmethod
-    def plot_fitness_evolution(best_fitness):
+    def plot_fitness_evolution(self):
         plt.figure()
-        plt.plot(best_fitness)
-        plt.title(f'Fitness Evolution ({best_fitness[-1]:.6f})')
+        plt.plot(self.best_fitness)
+        plt.title(f'Fitness Evolution ({self.best_fitness[-1]:.6f})')
         plt.xlabel('Generation')
         plt.ylabel('Fitness')
         plt.show()
@@ -114,4 +95,4 @@ class GeneticAlgorithm:
 if __name__ == "__main__":
     ga = GeneticAlgorithm()
     ga.run()
-    
+    ga.plot_fitness_evolution()
