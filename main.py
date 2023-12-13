@@ -12,10 +12,9 @@ sum_of_squares = 0
 for i in range(N):
     sum_of_squares += N**2
 
-#TODO change calculation of ideal J
-# J = 1/3 - (3 * N - 1) / (6*N**2) - 1 / (2*N**3) * sum_of_squares
+J = 1/3 - (3 * N - 1) / (6*N**2) - 1 / (2*N**3) * sum(np.square(x) for x in range(N))
 
-# print(J)
+print(J)
 
 
 class GeneticAlgorithm:
