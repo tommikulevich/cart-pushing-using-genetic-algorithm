@@ -1,4 +1,5 @@
 import os
+import glob
 import random
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,7 +12,7 @@ NON_ELITE_SIZE = int(NON_ELITE_RATE * POPULATION_SIZE)
 GENERATIONS = 1000
 MUTATION_RATE = 0.25
 
-LOGS_PATH = "Arch/logs"
+LOGS_PATH = "logs"
 LOG_NAME = f"{LOGS_PATH}/data_N{N}_PS{POPULATION_SIZE}_NER{NON_ELITE_RATE}_G{GENERATIONS}_MR{MUTATION_RATE}.txt"
 
 
@@ -26,8 +27,8 @@ class GeneticAlgorithm:
         return np.random.uniform(low=0.0, high=1.0, size=(POPULATION_SIZE, N))
 
     @staticmethod
-    def calculate_ideal_fitness():
-        return 1 / 3 - (3 * N - 1) / (6 * N ** 2) - 1 / (2 * N ** 3) * np.sum(np.square(range(N)))
+    def calculate_ideal_fitness(N_num):
+        return 1 / 3 - (3 * N_num - 1) / (6 * N_num ** 2) - 1 / (2 * N_num ** 3) * np.sum(np.square(range(N_num)))
 
     @staticmethod
     def evaluate(individual):
@@ -84,11 +85,25 @@ class GeneticAlgorithm:
         self.save_data_to_file()
 
     def plot_fitness_evolution(self):
-        best_fitness = self.calculate_ideal_fitness()
+        best_fitness = self.calculate_ideal_fitness(N)
         plt.figure()
         plt.plot(self.best_fitness)
         plt.axhline(y=best_fitness, color='r', linestyle='--', label=f"J* = {best_fitness:.6f}")
         plt.title(f'Fitness Evolution')
+        plt.xlabel('Generation')
+        plt.ylabel('Fitness')
+        plt.legend()
+        plt.show()
+
+    def plot_multiple_fitness_evolutions(self):
+        plt.figure()
+        files = glob.glob(f"{LOGS_PATH}/data_N*_PS*_NER*_G*_MR*.txt")
+        files.sort(key=lambda x: int(x.split('_')[1][1:]))
+        for file in files:
+            data = np.loadtxt(file)
+            N_file = int(os.path.basename(file).split('_')[1][1:])
+            plt.plot(data, label=f'N = {N_file} ({self.calculate_ideal_fitness(N_file):.6f})')
+        plt.title('Fitness Evolution Comparison')
         plt.xlabel('Generation')
         plt.ylabel('Fitness')
         plt.legend()
@@ -107,3 +122,4 @@ if __name__ == "__main__":
     ga = GeneticAlgorithm()
     ga.run()
     ga.plot_fitness_evolution()
+    # ga.plot_multiple_fitness_evolutions()
