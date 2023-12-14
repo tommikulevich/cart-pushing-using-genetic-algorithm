@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-N = 45
+N = 5
 POPULATION_SIZE = 70
 NON_ELITE_RATE = 0.90
 NON_ELITE_SIZE = int(NON_ELITE_RATE * POPULATION_SIZE)
@@ -21,6 +21,7 @@ class GeneticAlgorithm:
         self.population = self.initialize_population()
         self.fitness = np.zeros(POPULATION_SIZE)
         self.best_fitness = []
+        self.best_individuals = []
 
     @staticmethod
     def initialize_population():
@@ -76,6 +77,7 @@ class GeneticAlgorithm:
             child = self.single_point_crossover(*parents)
             new_population[i] = self.mutate(child)
         self.population = np.concatenate((new_population, elite_population))
+        self.best_individuals.append(self.population[np.argmax(self.fitness)])
 
     def run(self):
         for _ in range(GENERATIONS):
@@ -109,6 +111,17 @@ class GeneticAlgorithm:
         plt.legend()
         plt.show()
 
+    def plot_u_evolution(self):
+        population_best_individuals = np.array(self.best_individuals)
+        plt.figure(figsize=(10, 6))
+        for i in range(N):
+            plt.plot(population_best_individuals[:, i], label=f'u({i + 1})')
+        plt.title('Evolution of best u(N)')
+        plt.xlabel('Generation')
+        plt.ylabel('Value')
+        plt.legend()
+        plt.show()
+
     def save_data_to_file(self):
         os.makedirs(LOGS_PATH, exist_ok=True)
         np.savetxt(LOG_NAME, self.best_fitness)
@@ -121,5 +134,6 @@ class GeneticAlgorithm:
 if __name__ == "__main__":
     ga = GeneticAlgorithm()
     ga.run()
-    ga.plot_fitness_evolution()
+    # ga.plot_fitness_evolution()
+    ga.plot_u_evolution()
     # ga.plot_multiple_fitness_evolutions()
