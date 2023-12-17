@@ -68,6 +68,10 @@ class GeneticAlgorithm:
         sorted_indices = np.argsort(self.fitness)
         return self.population[sorted_indices[NON_ELITE_SIZE:]]
 
+    def best(self):
+        sorted_indices = np.argsort(self.fitness)
+        return self.population[sorted_indices[-1]]
+
     def evolve(self):
         new_population = np.zeros((NON_ELITE_SIZE, N))
         self.evaluate_population()
@@ -77,7 +81,8 @@ class GeneticAlgorithm:
             child = self.single_point_crossover(*parents)
             new_population[i] = self.mutate(child)
         self.population = np.concatenate((new_population, elite_population))
-        self.best_individuals.append(self.population[np.argmax(self.fitness)])
+        # self.best_individuals.append(self.population[np.argmax(self.fitness)])
+        self.best_individuals.append(self.best())
 
     def run(self):
         for _ in range(GENERATIONS):
