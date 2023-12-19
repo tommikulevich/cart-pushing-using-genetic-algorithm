@@ -5,9 +5,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-N = 5
+N = 15
 POPULATION_SIZE = 70
-NON_ELITE_RATE = 0.90
+NON_ELITE_RATE = 0.9
 NON_ELITE_SIZE = int(NON_ELITE_RATE * POPULATION_SIZE)
 GENERATIONS = 1000
 MUTATION_RATE = 0.25
@@ -81,8 +81,9 @@ class GeneticAlgorithm:
             child = self.single_point_crossover(*parents)
             new_population[i] = self.mutate(child)
         self.population = np.concatenate((new_population, elite_population))
-        # self.best_individuals.append(self.population[np.argmax(self.fitness)])
-        self.best_individuals.append(self.best())
+        self.evaluate_population()
+        self.best_individuals.append(self.population[np.argmax(self.fitness)])
+        # self.best_individuals.append(self.best())
 
     def run(self):
         for _ in range(GENERATIONS):
