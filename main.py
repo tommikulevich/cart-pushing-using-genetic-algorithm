@@ -9,7 +9,8 @@ N = 15
 POPULATION_SIZE = 70
 NON_ELITE_RATE = 0.9
 NON_ELITE_SIZE = int(NON_ELITE_RATE * POPULATION_SIZE)
-GENERATIONS = 1000
+GENERATIONS = 5000
+PLOT_GENERATIONS = 2500
 MUTATION_RATE = 0.25
 
 LOGS_PATH = "logs"
@@ -96,7 +97,7 @@ class GeneticAlgorithm:
         best_fitness = self.calculate_ideal_fitness(N)
         plt.figure()
         plt.plot(self.best_fitness)
-        plt.axhline(y=best_fitness, color='r', linestyle='--', label=f"J* = {best_fitness:.6f}")
+        plt.axhline(y=best_fitness, color='r', linestyle='--', label=f"N = {N} | J* = {best_fitness:.6f}")
         plt.title(f'Fitness Evolution')
         plt.xlabel('Generation')
         plt.ylabel('Fitness')
@@ -110,7 +111,7 @@ class GeneticAlgorithm:
         for file in files:
             data = np.loadtxt(file)
             N_file = int(os.path.basename(file).split('_')[1][1:])
-            plt.plot(data, label=f'N = {N_file} ({self.calculate_ideal_fitness(N_file):.6f})')
+            plt.plot(data[:PLOT_GENERATIONS], label=f'N = {N_file}')
         plt.title('Fitness Evolution Comparison')
         plt.xlabel('Generation')
         plt.ylabel('Fitness')
@@ -121,11 +122,11 @@ class GeneticAlgorithm:
         population_best_individuals = np.array(self.best_individuals)
         plt.figure(figsize=(10, 6))
         for i in range(N):
-            plt.plot(population_best_individuals[:, i], label=f'u({i + 1})')
+            plt.plot(population_best_individuals[:PLOT_GENERATIONS, i], label=f'u[{i + 1}]')
         plt.title('Evolution of best u(N)')
         plt.xlabel('Generation')
         plt.ylabel('Value')
-        plt.legend()
+        plt.legend(loc='center right')
         plt.show()
 
     def save_data_to_file(self):
@@ -140,6 +141,6 @@ class GeneticAlgorithm:
 if __name__ == "__main__":
     ga = GeneticAlgorithm()
     ga.run()
-    # ga.plot_fitness_evolution()
+    ga.plot_fitness_evolution()
     ga.plot_u_evolution()
     # ga.plot_multiple_fitness_evolutions()
